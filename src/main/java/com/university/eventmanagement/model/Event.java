@@ -115,11 +115,11 @@ public class Event {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
-    public List<Booking> getBookings {
+    public List<Booking> getBookings() {
         return bookings;
     }
-    public List<Rating> getRatings {
-        return ratings;
+    public List<Rating> getRatings (){
+        return Ratings;
     }
 
 
@@ -160,6 +160,6 @@ public class Event {
         this.bookings = bookings;
     }
     public void setRatings(List<Rating> ratings){
-        this.ratings= ratings;
+        this.Ratings= ratings;
     }
 }

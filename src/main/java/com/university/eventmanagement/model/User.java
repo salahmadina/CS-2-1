@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.university.eventmanagement.model.Booking;
-import com.university.eventmanagement.model.Ratings;
+import com.university.eventmanagement.model.Rating;
 
 @Entity
 @Table(name = "users")
@@ -98,7 +98,7 @@ public class User {
     public void setBookings(List<Booking> bookings){
         this.bookings = bookings;
     }
-    public void setRatings(List<Ratings> ratings){
+    public void setRatings(List<Rating> ratings){
         this.ratings = ratings;
     }
 
