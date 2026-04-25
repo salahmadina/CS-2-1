@@ -86,6 +86,9 @@ public class User {
     public void setPassword(String password){
         this.password= password;
     }
+    public void setEmail(String email){
+        this.email=email;
+    }
     public void setCollegeId(String collegeId){
         this.collegeId = collegeId;
     }
