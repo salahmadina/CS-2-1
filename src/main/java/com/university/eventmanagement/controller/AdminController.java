@@ -49,7 +49,116 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    
+    @GetMapping("/events/new")
+    public String showAddEventForm(HttpSession session , Model model){
+        User admin = getLoggedInAdmin(session);
+        if (admin == null)
+            return "redirect:/login";
+        
+        model.addAttribute("admin", admin);
+        model.addAttribute("event", new Event());
 
+        return "admin/event-form";
+    }
 
+    @PostMapping("/events/save")
+    public String saveEvent(@RequestParam String name, @RequestParam String description, @RequestParam String eventDate,
+         @RequestParam String price, @RequestParam (required = false) String totalSeats, @RequestParam String location ,
+          HttpSession session, RedirectAttributes redirectAttributes){
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null)
+            return "redirect:/login";
+
+        Event event = new Event();
+        event.setName(name);
+        event.setDescription(description);
+        event.setLocation(location);
+        event.setEventDate(LocalDateTime.parse(eventDate,DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
+        event.setPrice(price.isBlank() ? BigDecimal.ZERO : new BigDecimal(price));
+        event.setTotalSeats(totalSeats == null || totalSeats.isBlank()? null : Integer.parseInt(totalSeats));
+
+        eventService.createEvent(event);
+        redirectAttributes.addFlashAttribute("success", "Event created successfully!");
+        return "redirect:/admin/events";
+    }
+
+    @GetMapping("/events/edit/{id}")
+    public String showEditForm(@PathVariable long id, HttpSession session , Model model){
+        
+        User admin = getLoggedInAdmin(session);
+        if (admin == null)
+            return "redirect:/login";
+        
+        Optional <Event> eventopt = eventService.findById(id);
+        if (eventopt.isEpmty())
+            return "redirect:/admin/events";
+
+        model.addAttribute("admin", admin);
+        model.addAttribute("eventopt", eventopt.get());
+
+        return "admin/event-form";
+    }
+
+    @PostMapping("/events/update/{id}")
+    public String updateEvent(
+        @PathVariable Long id,
+        @RequestParam String name,
+        @RequestParam String description,
+        @RequestParam String eventDate,
+        @RequestParam String price,
+        @RequestParam(required = false) String totalSeats,
+        @RequestParam String location,
+        HttpSession session, 
+        RedirectAttributes redirectAttributes){
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+            
+ eventService.markAsPast(id);
+        redirectAttributes.addFlashAttribute("success", "Event moved to Past.");
+        return "redirect:/admin/events";
+    }
+
+    @GetMapping("/bookings")
+    public String manageBookings(HttpSession session, Model model) {
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        model.addAttribute("admin", admin);
+        model.addAttribute("bookings", bookingService.getAllBookings());
+
+        return "admin/bookings";
+    }
+
+    @PostMapping("/bookings/confirm/{bookingId}")
+    public String confirmPayment(@PathVariable Long bookingId,
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) {
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        String result = bookingService.confirmPayment(bookingId);
+
+        if (!result.equals("SUCCESS")) {
+            redirectAttributes.addFlashAttribute("error", result);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Payment confirmed!");
+        }
+
+        return "redirect:/admin/bookings";
+    }
+
+    private User getLoggedInAdmin(HttpSession session) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null || user.getRole() != User.Role.ADMIN) return null;
+        return user;
+    }
 }
+
+        
+
+
+
