@@ -62,16 +62,21 @@ public class AdminController {
     }
 
     @PostMapping("/events/save")
-    public String saveEvent(@RequestParam String name, @RequestParam String description, @RequestParam String eventDate,
-         @RequestParam String price, @RequestParam (required = false) String totalSeats, @RequestParam String location ,
-          HttpSession session, RedirectAttributes redirectAttributes){
+    public String saveEvent(@RequestParam String name, 
+        @RequestParam String description, 
+        @RequestParam String eventDate,
+         @RequestParam String price,
+          @RequestParam (required = false) String totalSeats,
+           @RequestParam String location ,
+          HttpSession session, 
+          RedirectAttributes redirectAttributes){
 
         User admin = getLoggedInAdmin(session);
         if (admin == null)
             return "redirect:/login";
 
         Event event = new Event();
-        event.setName(name);
+        event.setname(name);
         event.setDescription(description);
         event.setLocation(location);
         event.setEventDate(LocalDateTime.parse(eventDate,DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
@@ -91,7 +96,7 @@ public class AdminController {
             return "redirect:/login";
         
         Optional <Event> eventopt = eventService.findById(id);
-        if (eventopt.isEpmty())
+        if (eventopt.isEmpty())
             return "redirect:/admin/events";
 
         model.addAttribute("admin", admin);
