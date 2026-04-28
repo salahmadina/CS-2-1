@@ -53,6 +53,38 @@ public class AuthController {
             return "redirect:/student/dashboard";
 
         }
-        
    }
+    
+    @GetMapping("/register")
+    public String showRegisterPage() {
+        return "auth/register";
+    }
+
+    @PostMapping("/register")
+    public String processRegister(@RequestParam String name,
+                                  @RequestParam String email,
+                                  @RequestParam String password,
+                                  @RequestParam(required = false) String collegeId,
+                                  RedirectAttributes redirectAttributes) {
+
+        String result;
+        if (collegeId != null && !collegeId.isEmpty()) {
+            result = userService.registerStudent(name, email, password, collegeId);
+        } else {
+            result = userService.registerAdmin(name, email, password);
+        }
+
+        if (result.equals("SUCCESS")) {
+            redirectAttributes.addFlashAttribute("success", "Registration successful. Please log in.");
+            return "redirect:/login";
+        } else {
+            redirectAttributes.addFlashAttribute("error", result);
+            return "redirect:/register";
+        }
+    }
+    @GetMapping("/logout")
+    public String logout(HttpSession session){
+        session.invalidate();
+        return "redirect:/login";
+    }
 }
