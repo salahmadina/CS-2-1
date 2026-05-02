@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Bookings - UniEvents</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="page-container">
+        <div class="page-header">
+            <h2>All Bookings</h2>
+        </div>
+
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div th:if="${#lists.isEmpty(bookings)}" class="empty-state">
+            <p>No bookings yet.</p>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(bookings)}">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>College ID</th>
+                        <th>Event</th>
+                        <th>Event Date</th>
+                        <th>Price</th>
+                        <th>Payment Status</th>
+                        <th>Booked On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="booking, stat : ${bookings}">
+                        <td th:text="${stat.index + 1}"></td>
+                        <td th:text="${booking.user.name}"></td>
+                        <td th:text="${booking.user.collegeId}"></td>
+                        <td th:text="${booking.event.name}"></td>
+                        <td th:text="${#temporals.format(booking.event.eventDate, 'dd MMM yyyy')}"></td>
+                        <td>
+                            <span th:if="${booking.event.free}">FREE</span>
+                            <span th:unless="${booking.event.free}"
+                                  th:text="'$' + ${booking.event.price}"></span>
+                        </td>
+                        <td>
+                            <span th:switch="${booking.paymentStatus.name()}">
+                                <span th:case="'FREE'"    class="badge badge-success">FREE</span>
+                                <span th:case="'PENDING'" class="badge badge-warning">PENDING</span>
+                                <span th:case="'PAID'"    class="badge badge-paid">PAID ✓</span>
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(booking.bookedAt, 'dd MMM yyyy')}"></td>
+                        <td>
+                            <form th:if="${booking.paymentStatus.name() == 'PENDING'}"
+                                  th:action="@{/admin/bookings/confirm/{id}(id=${booking.id})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-sm btn-primary">Confirm Payment</button>
+                            </form>
+                            <span th:unless="${booking.paymentStatus.name() == 'PENDING'}"
+                                  class="text-muted">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>
