@@ -32,7 +32,7 @@ public class BookingService {
             return "You have already booked this event.";
         }
 
-        if (!event.hasAvailableSeats()) {
+        if (!event.hasAvaliableSeats()) {
             return "Sorry, this event is fully booked.";
         }
 
@@ -103,7 +103,7 @@ public class BookingService {
             return "Refund already confirmed.";
         }
 
-        booking.setRefundStatus(Booking.RefundStatus.REFUNDED);
+        booking.SetRefundStatus(Booking.RefundStatus.REFUNDED);
         bookingRepository.save(booking);
         return "SUCCESS";
     }
