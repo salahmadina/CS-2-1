@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>My Bookings</title>
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div th:insert="fragments/navbar"::navbar></div>
+        <div class="page-container">
+            <div class="page-header">
+                <div>
+                    <h2>My Bookings</h2>
+                    <p>Your Registered Events and payment status</p>
+                </div>
+            <div>
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${#lists.isEmpty(booking)}" class="empty-state">
+                    <p>You haven't booked any events yet</p>
+                    <a th:href="@{/student/dashboard}" class="btn btn-primary">Browse Events</a>
+                </div>
+                <div th:if="${!#lists.isEmpty(booking)}" class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Price</th>
+                        <th>Payment Status</th>
+                        <th>Event Status</th>
+                        <th>Booked On</th>
+                        <th>Rating</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="booking : ${booking}">
+                                <td th:text="${booking.event.name}"></td>
+                                <td th:text="${#temporals.format(booking.event.date,'dd MMM YYYY')}"></td>
+                                <td>
+                                    <span th:if="${booking.event.free}">FREE</span>
+                                    <span th:if="${!booking.event.free}"
+                                    th:text="'$' + ${booking.event.price}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${booking.event.cancelled and booking.paymentStatus.name() == 'PAID' 
+                                    and booking.refundStatus.name() == 'IN_PROCESS'}"
+                                  class="status-cancelled">Event Cancelled &mdash; Refund in Process &#x23F3;</span>
+
+                                  <span th:if="${booking.event.cancelled and booking.paymentStatus.name()='PAID'
+                                                 and booking.refundStatus.name() == 'REFUNDED'}"
+                                            class="badge badge-success">Event Cancelled &mdash; Money Refunded &#x2705;</span>
+                                    <span th:if="${booking.paymentStatus.name() != 'PAID' and booking.event.cancelled}"
+                                    class="status-cancelled">Event Cancelled &#x274C;</span>
+                                    
+                            <span th:if="${!booking.event.cancelled}"
+                                  th:text="${booking.event.status.name()}"></span>
+                                </td>
+                                <td th:text="${temporals.format(booking.bookedAt,'dd mm yyyy')}"></td>
+                                <td>
+                            <span th:if="${ratedMap[booking.event.id]}"
+                                  class="badge badge-rated">Rated</span>
+                            <button th:if="${!ratedMap[booking.event.id] and canRateMap[booking.event.id]}"
+                                    class="btn btn-sm btn-outline rate-btn"
+                                    th:data-event-id="${booking.event.id}"
+                                    th:data-event-name="${booking.event.name}">
+                                Rate
+                            </button>
+                            <span th:switch="${true}">
+                                <span th:case="${booking.event.cancelled}" class="badge badge-grey">Unavailable</span>
+                                <span th:case="${canRateMap[booking.event.id]}"class="badge badge-green">Rate Now</span>
+                                <span th:case="${ratedMap[booking.event.id]}"class="badge badge-blue">Rated</span>
+                                <span th:case="*"class="badge badge-grey">Available after event</span>
+                            </span>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="ratingModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Rate: <span id="modalEventName"></span></h3>
+            <form id="ratingForm" method="post">
+                <div class="form-group">
+                    <label>Stars (1 to 5)</label>
+                    <div class="star-selector">
+                        <input type="radio" name="stars" value="5" id="s5"><label for="s5">&#9733;</label>
+                        <input type="radio" name="stars" value="4" id="s4"><label for="s4">&#9733;</label>
+                        <input type="radio" name="stars" value="3" id="s3"><label for="s3">&#9733;</label>
+                        <input type="radio" name="stars" value="2" id="s2"><label for="s2">&#9733;</label>
+                        <input type="radio" name="stars" value="1" id="s1"><label for="s1">&#9733;</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Comment (optional)</label>
+                    <textarea name="comment" rows="3" placeholder="Share your experience..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary">Submit Rating</button>
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.rate-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var eventId   = this.getAttribute('data-event-id');
+                var eventName = this.getAttribute('data-event-name');
+                document.getElementById('modalEventName').textContent = eventName;
+                document.getElementById('ratingForm').action = '/student/rate/' + eventId;
+                document.getElementById('ratingModal').style.display = 'flex';
+            });
+        });
+        function closeModal() {
+            document.getElementById('ratingModal').style.display = 'none';
+        }
+    </script>
+            </div>
+        </div>
+    </body>
+</html>
