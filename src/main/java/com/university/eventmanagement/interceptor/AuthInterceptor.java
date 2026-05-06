@@ -19,28 +19,28 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         String url = request.getRequestURI();
 
-        // Allow public URLs
+        
         if (isPublicUrl(url)) {
             return true;
         }
 
-        // Check session
+        
         HttpSession session = request.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("loggedInUser") : null;
 
-        // Not logged in → redirect to login
+        
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return false;
         }
 
-        // Student trying to access admin area → deny
+       
         if (url.startsWith("/admin") && user.getRole() != User.Role.ADMIN) {
             response.sendRedirect(request.getContextPath() + "/student/dashboard");
             return false;
         }
 
-        // Admin trying to access student area → deny
+        
         if (url.startsWith("/student") && user.getRole() != User.Role.STUDENT) {
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             return false;
