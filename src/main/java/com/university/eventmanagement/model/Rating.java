@@ -38,7 +38,6 @@ public class Rating {
         this.ratedAt = LocalDateTime.now();
     }
 
-    // ── Getters ──
     public Long getId() { return id; }
     public User getUser() { return user; }
     public Event getEvent() { return event; }
@@ -46,7 +45,6 @@ public class Rating {
     public String getComment() { return comment; }
     public LocalDateTime getRatedAt() { return ratedAt; }
 
-    // ── Setters ──
     public void setId(Long id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setEvent(Event event) { this.event = event; }

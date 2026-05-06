@@ -48,7 +48,6 @@ public class User {
         STUDENT, ADMIN
     }
 
-    // ── Getters ──
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
@@ -59,7 +58,6 @@ public class User {
     public List<Booking> getBookings() { return bookings; }
     public List<Rating> getRatings() { return ratings; }
 
-    // ── Setters ──
     public void setId(Long id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setEmail(String email) { this.email = email; }

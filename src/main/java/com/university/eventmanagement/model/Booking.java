@@ -48,7 +48,6 @@ public class Booking {
         NONE, IN_PROCESS, REFUNDED
     }
 
-    // ── Getters ──
     public Long getId() { return id; }
     public User getUser() { return user; }
     public Event getEvent() { return event; }
@@ -56,7 +55,6 @@ public class Booking {
     public RefundStatus getRefundStatus() { return refundStatus; }
     public LocalDateTime getBookedAt() { return bookedAt; }
 
-    // ── Setters ──
     public void setId(Long id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setEvent(Event event) { this.event = event; }

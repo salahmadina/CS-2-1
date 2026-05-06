@@ -60,7 +60,6 @@ public class Event {
         if (this.cancelled == null) this.cancelled = false;
     }
 
-    // ── Helper methods ──
     public boolean isFree() {
         return this.price == null || this.price.compareTo(BigDecimal.ZERO) == 0;
     }
@@ -83,7 +82,6 @@ public class Event {
         UPCOMING, PAST, POSTPONED
     }
 
-    // ── Getters ──
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
@@ -99,7 +97,6 @@ public class Event {
     public List<Booking> getBookings() { return bookings; }
     public List<Rating> getRatings() { return ratings; }
 
-    // ── Setters ──
     public void setId(Long id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setDescription(String description) { this.description = description; }
