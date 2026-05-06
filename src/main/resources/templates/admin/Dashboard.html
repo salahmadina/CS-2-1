@@ -1,9 +1,9 @@
 <!doctype html>
-<html xmlns : th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <title>Admin Dashboard - UniEvents</title>
-    <link rel="stylesheet" th:herf="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
   </head>
   <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -12,7 +12,7 @@
       <div class="page-header">
         <div>
           <h2>Admin Dashboard</h2>
-          <p>Welcome , <span th:text="${admin.name}"></span></p>
+          <p>Welcome, <span th:text="${admin.name}"></span></p>
         </div>
       </div>
 
@@ -21,13 +21,11 @@
           <div class="stat-number" th:text="${totalEvents}">0</div>
           <div class="stat-label">Total Events</div>
         </div>
-
-        <div class="stat=card">
-          <div class="stat-number" th:text="${pendingBookings}">0</div>
+        <div class="stat-card">
+          <div class="stat-number" th:text="${totalBookings}">0</div>
           <div class="stat-label">Total Bookings</div>
         </div>
-
-        <div class="stat=card highlight">
+        <div class="stat-card highlight">
           <div class="stat-number" th:text="${pendingCount}">0</div>
           <div class="stat-label">Pending Payments</div>
         </div>
@@ -37,48 +35,53 @@
         <a th:href="@{/admin/events/new}" class="btn btn-primary"
           >+ Add New Event</a
         >
-        <a th:href="@{/admin/events}" class="btn btn-outline"> Manage Events</a>
+        <a th:href="@{/admin/events}" class="btn btn-outline">Manage Events</a>
         <a th:href="@{/admin/bookings}" class="btn btn-outline"
-          >View bookings</a
+          >View Bookings</a
         >
       </div>
 
       <div class="section-title">All Events</div>
       <div class="table-wrapper">
         <table class="data-table">
-          <thread>
+          <thead>
             <tr>
               <th>Event Name</th>
               <th>Date</th>
               <th>Price</th>
               <th>Seats</th>
               <th>Status</th>
+              <th>Rating</th>
             </tr>
-          </thread>
+          </thead>
           <tbody>
-            <tr th:each="event: ${events}">
+            <tr th:each="event : ${events}">
               <td th:text="${event.name}"></td>
               <td
-                th:text="${#temporals.format(event.eventDate,'dd MMM YYYY')}"
+                th:text="${#temporals.format(event.eventDate, 'dd MMM yyyy')}"
               ></td>
-
               <td>
                 <span th:if="${event.free}">FREE</span>
                 <span
                   th:unless="${event.free}"
-                  th:text="'$'+${event.price}"
+                  th:text="'$' + ${event.price}"
                 ></span>
               </td>
               <td>
                 <span th:if="${event.unlimited}">Unlimited</span>
                 <span
                   th:unless="${event.unlimited}"
-                  th
-                  :text="${event.bookedSeats}+ '/' +${event.totalSeats}"
+                  th:text="${event.bookedSeats} + '/' + ${event.totalSeats}"
                 ></span>
               </td>
               <td>
-                <span th:switch="${event,status.name()}">
+                <span th:if="${event.cancelled}" class="badge badge-danger"
+                  >CANCELLED</span
+                >
+                <span
+                  th:unless="${event.cancelled}"
+                  th:switch="${event.status.name()}"
+                >
                   <span th:case="'UPCOMING'" class="badge badge-success"
                     >UPCOMING</span
                   >
@@ -87,6 +90,15 @@
                   >
                   <span th:case="'PAST'" class="badge badge-grey">PAST</span>
                 </span>
+              </td>
+              <td>
+                <span
+                  th:if="${ratingCountMap[event.id] > 0}"
+                  th:text="${averageRatingMap[event.id]} + ' / 5 (' + ${ratingCountMap[event.id]} + ')'"
+                ></span>
+                <span th:if="${ratingCountMap[event.id] == 0}"
+                  >No ratings yet</span
+                >
               </td>
             </tr>
           </tbody>
