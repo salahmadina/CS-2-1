@@ -44,7 +44,7 @@ public class Booking {
         FREE,PENDING,PAID
     }
     public enum RefundStatus{
-        NONE,IN_PROCESS,PAID;
+        NONE,IN_PROCESS,PAID, REFUNDED;
     }
 
     public void setId (Long id){

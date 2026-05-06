@@ -12,10 +12,10 @@ import java.util.Optional;
 public class EventService {
     
     @Autowired
-    private EventRespoitory eventRepository;
+    private EventRepository eventRepository;
 
     public List<Event> getActiveEvents(){
-        return eventRepository.findByStatusInOderByEventDataAsc(
+        return eventRepository.findByStatusInOrderByEventDateAsc(
             List.of(Event.Status.UPCOMING, Event.Status.POSTPONED)
         );
     }
@@ -24,7 +24,7 @@ public class EventService {
         return eventRepository.findByStatus(Event.Status.PAST);
     }
 
-    public Optional<Event> getAllEvents(){
+    public List<Event> getAllEvents(){
         return eventRepository.findAll();
     }
 
@@ -33,27 +33,27 @@ public class EventService {
     }
 
     public Event createEvent(Event event){
-        event.BookedSeats(0);
+        event.setBookedSeats(0);
         event.setStatus(Event.Status.UPCOMING);
         return eventRepository.save(event);
     }
 
-    public Event updateEvent(Long id, Event updateData){
+    public Event updateEvent(Long id, Event updatedDate){
         Event existing = eventRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        boolean dateChanged = !existing.getEventDate().equals(updatedData.getEventDate());
+        boolean dateChanged = !existing.getEventDate().equals(updatedDate.getEventDate());
 
-        existing.setName(updatedData.getName());
-        existing.setDescription(updatedData.getDescription);
-        existing.setEventDate(updatedData.getEventDate());
-        existing.setPrice(updatedData.getprice());
-        existing.setTotalSeats(updatedData.getTotalSeats());
-        existing.setLocation(updatedData.getLocation());
+        existing.setname(updatedDate.getName());
+        existing.setDescription(updatedDate.getDescription());
+        existing.setEventDate(updatedDate.getEventDate());
+        existing.setPrice(updatedDate.getPrice());
+        existing.setTotalSeats(updatedDate.getTotalSeats());
+        existing.setLocation(updatedDate.getLocation());
 
-        if (dataChanged && existing.getStatus() == Event.Status.UPCOMING){
+        if (dateChanged && existing.getStatus() == Event.Status.UPCOMING){
             existing.setStatus(Event.Status.POSTPONED);
-        
+        }
             return eventRepository.save(existing);
         }
 
@@ -74,6 +74,9 @@ public class EventService {
         return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
         }
 
+        public long getRatingCount(long eventId){
+            return eventRepository.countRatingsByEventId(eventId);
+        }
     
 
 }
