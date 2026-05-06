@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="navbar" class="navbar">
+    <div class="navbar-brand">
+        🎓 UniEvents
+    </div>
+    <div class="navbar-links">
+
+        <!-- Student navbar -->
+        <th:block th:if="${session.userRole == 'STUDENT'}">
+            <a th:href="@{/student/dashboard}">Events</a>
+            <a th:href="@{/student/my-bookings}">My Bookings</a>
+            <span class="nav-user">👤 <span th:text="${session.loggedInUser.name}"></span></span>
+            <a th:href="@{/logout}" class="btn-logout">Logout</a>
+        </th:block>
+
+        <!-- Admin navbar -->
+        <th:block th:if="${session.userRole == 'ADMIN'}">
+            <a th:href="@{/admin/dashboard}">Dashboard</a>
+            <a th:href="@{/admin/events}">Events</a>
+            <a th:href="@{/admin/bookings}">Bookings</a>
+            <span class="nav-user">🔧 <span th:text="${session.loggedInUser.name}"></span></span>
+            <a th:href="@{/logout}" class="btn-logout">Logout</a>
+        </th:block>
+
+    </div>
+</nav>
+
+</body>
+</html>
