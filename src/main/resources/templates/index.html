@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>UniEvents - University Event Management</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="landing-page">
+
+    <div class="landing-container">
+        <div class="landing-card">
+            <h1>🎓 UniEvents</h1>
+            <p class="landing-subtitle">Your University Event Management System</p>
+            <div class="landing-buttons">
+                <a th:href="@{/login}" class="btn btn-primary">Login</a>
+                <a th:href="@{/register}" class="btn btn-outline">Register</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
