@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Register - UniEvents</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body class="auth-page">
 
     <div class="auth-container">
-        <div class="auth-card">
-            <h1>Register</h1>
-            <p>Create your account to join the UniEvents community!</p>
+        <div class="auth-card wide">
+            <h2>📝 Register</h2>
+
             <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+            <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
             <div class="tab-group">
                 <button class="tab-btn active" onclick="showTab('student')">Student</button>
                 <button class="tab-btn" onclick="showTab('admin')">Admin</button>
             </div>
 
-            <div class="tab-content" id="student-content">
-                <form action="/register/student" method="post">
+            <div id="tab-student">
+                <form th:action="@{/register/student}" method="post">
                     <div class="form-group">
                         <label>Full Name</label>
                         <input type="text" name="name" placeholder="Your full name" required />
@@ -34,21 +36,21 @@
                     <div class="form-group">
                         <label>College ID <small>(9 digits, starts with 2)</small></label>
                         <input type="text" name="collegeId"
-                            placeholder="e.g. 201234567"
-                            pattern="2\d{8}"
-                            maxlength="9"
-                            title="Must be 9 digits and start with 2"
-                            required />
+                               placeholder="e.g. 201234567"
+                               pattern="2\d{8}"
+                               maxlength="9"
+                               title="Must be 9 digits and start with 2"
+                               required />
                     </div>
                     <button type="submit" class="btn btn-primary btn-full">Register as Student</button>
                 </form>
             </div>
 
             <div id="tab-admin" style="display:none;">
-                <form action="/register/admin" method="post">
+                <form th:action="@{/register/admin}" method="post">
                     <div class="form-group">
-                        <label>Admin Username</label>
-                        <input type="text" name="name" placeholder="ex: adminJohn" required />
+                        <label>Admin Username <small>(must start with "admin")</small></label>
+                        <input type="text" name="name" placeholder="e.g. adminJohn" required />
                     </div>
                     <div class="form-group">
                         <label>Email</label>
@@ -63,15 +65,18 @@
             </div>
 
             <p class="auth-link">
-                Already have an account? <a href="/login">Login here</a>
+                Already have an account? <a th:href="@{/login}">Login here</a>
             </p>
         </div>
     </div>
 
     <script>
         function showTab(tab) {
-            document.getElementById('student-content').style.display = tab === 'student' ? 'block' : 'none';
-            document.getElementById('tab-admin').style.display = tab === 'admin' ? 'block' : 'none';
+            document.getElementById('tab-student').style.display = tab === 'student' ? 'block' : 'none';
+            document.getElementById('tab-admin').style.display   = tab === 'admin'   ? 'block' : 'none';
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (tab === 'student' && i === 0) || (tab === 'admin' && i === 1));
+            });
         }
     </script>
 

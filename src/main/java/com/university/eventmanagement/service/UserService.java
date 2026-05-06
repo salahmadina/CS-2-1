@@ -1,27 +1,30 @@
 package com.university.eventmanagement.service;
 
-import com.university.eventmanagement.model.User;
-import com.university.eventmanagement.repository.UserRepository;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import com.university.eventmanagement.model.User;
+import com.university.eventmanagement.repository.UserRepository;
+
 @Service
 public class UserService {
-    
+
     @Autowired
     private UserRepository userRepository;
 
-    public String registerStudent(String name ,String email ,String password , String collegeId){
-    
-        if (userRepository.existsByEmail(email)){
-            return "Email already registered";
+    public String registerStudent(String name, String email, String password, String collegeId) {
+
+        if (userRepository.existsByEmail(email)) {
+            return "Email already registered.";
         }
-        if (!isValidCollegeId(collegeId)){
+
+        if (!isValidCollegeId(collegeId)) {
             return "College ID must be exactly 9 digits and start with '2'.";
         }
-            if (userRepository.existsByCollegeId(collegeId)){
+
+        if (userRepository.existsByCollegeId(collegeId)) {
             return "College ID already registered.";
         }
 
@@ -30,14 +33,15 @@ public class UserService {
         student.setEmail(email);
         student.setPassword(password);
         student.setCollegeId(collegeId);
+        student.setRole(User.Role.STUDENT);
 
         userRepository.save(student);
-        return "SUCESS";
+        return "SUCCESS";
     }
 
-    public String registerAdmin(String name ,String email ,String password) {
+    public String registerAdmin(String name, String email, String password) {
 
-        if (!name.toLowerCase().startsWith("admin")){
+        if (!name.toLowerCase().startsWith("admin")) {
             return "Admin username must start with 'admin'.";
         }
 
@@ -53,28 +57,22 @@ public class UserService {
 
         userRepository.save(admin);
         return "SUCCESS";
-
     }
 
     public User login(String email, String password) {
-
-        User user = userRepository.findByEmail(email).get();
-    
-        if (user == null) {
-        throw new RuntimeException("Email not found");
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
+            return userOpt.get();
         }
-    
-        if (user.getPassword().equals(password)) {
-        return user;
-     }
-    
-        throw new RuntimeException("Wrong password");
+        return null;
     }
-        private boolean isValidCollegeId(String collegeId) {
+
+    private boolean isValidCollegeId(String collegeId) {
         if (collegeId == null) return false;
         return collegeId.matches("^2\\d{8}$");
     }
-    public User findById(Long id) {
-    return userRepository.findById(id).orElse(null);
-}
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
 }
