@@ -67,7 +67,7 @@ public class StudentController {
         return "student/dashboard";
     }
 
-    @PostMapping("/book/{eventId}") // add to the db  btb3t 7aga lel db  
+    @PostMapping("/book/{eventId}") 
     public String bookEvent(@PathVariable Long eventId,
                             HttpSession session,
                             RedirectAttributes redirectAttributes) {
