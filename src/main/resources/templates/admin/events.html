@@ -69,7 +69,7 @@
                                         th:disabled="${event.status.name() == 'PAST'}">Past</button>
                             </form>
 
-                            <form th:action="@{/admin/events/delete/{id}(id=${event.id})}"
+                            <form th:action="@{/admin/events/cancel/{id}(id=${event.id})}"
                                   method="post"
                                   class="cancel-event-form"
                                   style="display:inline;"
