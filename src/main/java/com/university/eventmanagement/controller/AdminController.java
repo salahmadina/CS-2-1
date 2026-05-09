@@ -18,27 +18,28 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-@Controller 
-@RequestMapping
+@Controller
+@RequestMapping("/admin")
 public class AdminController {
-    
-    @Autowired 
+
+    @Autowired
     private EventService eventService;
 
-    @Autowired 
+    @Autowired
     private BookingService bookingService;
 
     @GetMapping("/dashboard")
-    public String dashboard (HttpSession session, Model model){
+    public String dashboard(HttpSession session, Model model) {
 
         User admin = getLoggedInAdmin(session);
-        if (admin == null)
-            return "redirect:/login";
+        if (admin == null) return "redirect:/login";
 
-        List <Event> allEvents = eventService.getAllEvents();
-        List <Booking> allBookings = bookingService.getAllBookings();
+        List<Event> allEvents     = eventService.getAllEvents();
+        List<Booking> allBookings = bookingService.getAllBookings();
 
-        long pendingCount = allBookings.stream().filter(b -> b.getPaymentStatus() == Booking.PaymentStatus.PENDING).count();
+        long pendingCount = allBookings.stream()
+            .filter(b -> b.getPaymentStatus() == Booking.PaymentStatus.PENDING)
+            .count();
 
         model.addAttribute("admin", admin);
         model.addAttribute("events", allEvents);
@@ -49,12 +50,24 @@ public class AdminController {
         return "admin/dashboard";
     }
 
-    @GetMapping("/events/new")
-    public String showAddEventForm(HttpSession session , Model model){
+    @GetMapping("/events")
+    public String manageEvents(HttpSession session, Model model) {
+
         User admin = getLoggedInAdmin(session);
-        if (admin == null)
-            return "redirect:/login";
-        
+        if (admin == null) return "redirect:/login";
+
+        model.addAttribute("admin", admin);
+        model.addAttribute("events", eventService.getAllEvents());
+
+        return "admin/events";
+    }
+
+    @GetMapping("/events/new")
+    public String showAddEventForm(HttpSession session, Model model) {
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+
         model.addAttribute("admin", admin);
         model.addAttribute("event", new Event());
 
@@ -62,26 +75,27 @@ public class AdminController {
     }
 
     @PostMapping("/events/save")
-    public String saveEvent(@RequestParam String name, 
-        @RequestParam String description, 
-        @RequestParam String eventDate,
-         @RequestParam String price,
-          @RequestParam (required = false) String totalSeats,
-           @RequestParam String location ,
-          HttpSession session, 
-          RedirectAttributes redirectAttributes){
+    public String saveEvent(@RequestParam String name,
+                            @RequestParam String description,
+                            @RequestParam String eventDate,
+                            @RequestParam String price,
+                            @RequestParam(required = false) String totalSeats,
+                            @RequestParam String location,
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
 
         User admin = getLoggedInAdmin(session);
-        if (admin == null)
-            return "redirect:/login";
+        if (admin == null) return "redirect:/login";
 
         Event event = new Event();
-        event.setname(name);
+        event.setName(name);
         event.setDescription(description);
         event.setLocation(location);
-        event.setEventDate(LocalDateTime.parse(eventDate,DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
+        event.setEventDate(LocalDateTime.parse(eventDate,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
         event.setPrice(price.isBlank() ? BigDecimal.ZERO : new BigDecimal(price));
-        event.setTotalSeats(totalSeats == null || totalSeats.isBlank()? null : Integer.parseInt(totalSeats));
+        event.setTotalSeats(totalSeats == null || totalSeats.isBlank()
+            ? null : Integer.parseInt(totalSeats));
 
         eventService.createEvent(event);
         redirectAttributes.addFlashAttribute("success", "Event created successfully!");
@@ -89,38 +103,73 @@ public class AdminController {
     }
 
     @GetMapping("/events/edit/{id}")
-    public String showEditForm(@PathVariable long id, HttpSession session , Model model){
-        
+    public String showEditForm(@PathVariable Long id,
+                               HttpSession session,
+                               Model model) {
+
         User admin = getLoggedInAdmin(session);
-        if (admin == null)
-            return "redirect:/login";
-        
-        Optional <Event> eventopt = eventService.findById(id);
-        if (eventopt.isEmpty())
-            return "redirect:/admin/events";
+        if (admin == null) return "redirect:/login";
+
+        Optional<Event> eventOpt = eventService.findById(id);
+        if (eventOpt.isEmpty()) return "redirect:/admin/events";
 
         model.addAttribute("admin", admin);
-        model.addAttribute("eventopt", eventopt.get());
+        model.addAttribute("event", eventOpt.get());
 
         return "admin/event-form";
     }
 
     @PostMapping("/events/update/{id}")
-    public String updateEvent(
-        @PathVariable Long id,
-        @RequestParam String name,
-        @RequestParam String description,
-        @RequestParam String eventDate,
-        @RequestParam String price,
-        @RequestParam(required = false) String totalSeats,
-        @RequestParam String location,
-        HttpSession session, 
-        RedirectAttributes redirectAttributes){
+    public String updateEvent(@PathVariable Long id,
+                              @RequestParam String name,
+                              @RequestParam String description,
+                              @RequestParam String eventDate,
+                              @RequestParam String price,
+                              @RequestParam(required = false) String totalSeats,
+                              @RequestParam String location,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
 
         User admin = getLoggedInAdmin(session);
         if (admin == null) return "redirect:/login";
-            
- eventService.markAsPast(id);
+
+        Event updatedData = new Event();
+        updatedData.setName(name);
+        updatedData.setDescription(description);
+        updatedData.setLocation(location);
+        updatedData.setEventDate(LocalDateTime.parse(eventDate,
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
+        updatedData.setPrice(price.isBlank() ? BigDecimal.ZERO : new BigDecimal(price));
+        updatedData.setTotalSeats(totalSeats == null || totalSeats.isBlank()
+            ? null : Integer.parseInt(totalSeats));
+
+        eventService.updateEvent(id, updatedData);
+        redirectAttributes.addFlashAttribute("success", "Event updated successfully!");
+        return "redirect:/admin/events";
+    }
+
+    @PostMapping("/events/delete/{id}")
+    public String deleteEvent(@PathVariable Long id,
+                              HttpSession session,
+                              RedirectAttributes redirectAttributes) {
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        eventService.deleteEvent(id);
+        redirectAttributes.addFlashAttribute("success", "Event deleted.");
+        return "redirect:/admin/events";
+    }
+
+    @PostMapping("/events/past/{id}")
+    public String markAsPast(@PathVariable Long id,
+                             HttpSession session,
+                             RedirectAttributes redirectAttributes) {
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        eventService.markAsPast(id);
         redirectAttributes.addFlashAttribute("success", "Event moved to Past.");
         return "redirect:/admin/events";
     }
@@ -162,8 +211,3 @@ public class AdminController {
         return user;
     }
 }
-
-        
-
-
-
