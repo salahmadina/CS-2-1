@@ -10,73 +10,67 @@ import java.util.Optional;
 
 @Service
 public class EventService {
-    
+
     @Autowired
     private EventRepository eventRepository;
 
-    public List<Event> getActiveEvents(){
+    public List<Event> getActiveEvents() {
         return eventRepository.findByStatusInOrderByEventDateAsc(
             List.of(Event.Status.UPCOMING, Event.Status.POSTPONED)
         );
     }
-    
-    public List<Event> getPastEvents(){
+
+    public List<Event> getPastEvents() {
         return eventRepository.findByStatus(Event.Status.PAST);
     }
 
-    public List<Event> getAllEvents(){
+    public List<Event> getAllEvents() {
         return eventRepository.findAll();
     }
 
-    public Optional<Event> findById(Long id){
+    public Optional<Event> findById(Long id) {
         return eventRepository.findById(id);
     }
 
-    public Event createEvent(Event event){
+    public Event createEvent(Event event) {
         event.setBookedSeats(0);
         event.setStatus(Event.Status.UPCOMING);
         return eventRepository.save(event);
     }
 
-    public Event updateEvent(Long id, Event updatedDate){
+    public Event updateEvent(Long id, Event updatedData) {
         Event existing = eventRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Event not found"));
+            .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        boolean dateChanged = !existing.getEventDate().equals(updatedDate.getEventDate());
+        boolean dateChanged = !existing.getEventDate().equals(updatedData.getEventDate());
 
-        existing.setname(updatedDate.getName());
-        existing.setDescription(updatedDate.getDescription());
-        existing.setEventDate(updatedDate.getEventDate());
-        existing.setPrice(updatedDate.getPrice());
-        existing.setTotalSeats(updatedDate.getTotalSeats());
-        existing.setLocation(updatedDate.getLocation());
+        existing.setName(updatedData.getName());
+        existing.setDescription(updatedData.getDescription());
+        existing.setEventDate(updatedData.getEventDate());
+        existing.setPrice(updatedData.getPrice());
+        existing.setTotalSeats(updatedData.getTotalSeats());
+        existing.setLocation(updatedData.getLocation());
 
-        if (dateChanged && existing.getStatus() == Event.Status.UPCOMING){
+        if (dateChanged && existing.getStatus() == Event.Status.UPCOMING) {
             existing.setStatus(Event.Status.POSTPONED);
         }
-            return eventRepository.save(existing);
-        }
 
-        public void deleteEvent(Long id) {
+        return eventRepository.save(existing);
+    }
+
+    public void deleteEvent(Long id) {
         eventRepository.deleteById(id);
-        }
+    }
 
-
-        public void markAsPast(Long id){
-            Event event = eventRepository.findById(id)
+    public void markAsPast(Long id) {
+        Event event = eventRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Event not found"));
         event.setStatus(Event.Status.PAST);
         eventRepository.save(event);
-        }
+    }
 
-        public double getAverageRating(Long eventId) {
+    public double getAverageRating(Long eventId) {
         Double avg = eventRepository.findAverageRatingByEventId(eventId);
         return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
-        }
-
-        public long getRatingCount(long eventId){
-            return eventRepository.countRatingsByEventId(eventId);
-        }
-    
-
+    }
 }

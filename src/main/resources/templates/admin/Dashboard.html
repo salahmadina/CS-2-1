@@ -48,7 +48,6 @@
                         <th>Price</th>
                         <th>Seats</th>
                         <th>Status</th>
-                        <th>Rating</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,17 +64,11 @@
                                   th:text="${event.bookedSeats} + '/' + ${event.totalSeats}"></span>
                         </td>
                         <td>
-                            <span th:if="${event.cancelled}" class="badge badge-danger">CANCELLED</span>
-                            <span th:unless="${event.cancelled}" th:switch="${event.status.name()}">
+                            <span th:switch="${event.status.name()}">
                                 <span th:case="'UPCOMING'"  class="badge badge-success">UPCOMING</span>
                                 <span th:case="'POSTPONED'" class="badge badge-warning">POSTPONED</span>
                                 <span th:case="'PAST'"      class="badge badge-grey">PAST</span>
                             </span>
-                        </td>
-                        <td>
-                            <span th:if="${ratingCountMap[event.id] > 0}"
-                                  th:text="${averageRatingMap[event.id]} + ' / 5 (' + ${ratingCountMap[event.id]} + ')'"></span>
-                            <span th:if="${ratingCountMap[event.id] == 0}">No ratings yet</span>
                         </td>
                     </tr>
                 </tbody>
