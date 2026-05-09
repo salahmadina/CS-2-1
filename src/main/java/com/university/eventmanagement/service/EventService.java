@@ -1,13 +1,14 @@
 package com.university.eventmanagement.service;
-
-import java.util.List;
-import java.util.Optional;
-
+import com.university.eventmanagement.model.Booking;
+import com.university.eventmanagement.model.Event;
+import com.university.eventmanagement.repository.BookingRepository;
+import com.university.eventmanagement.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.university.eventmanagement.model.Event;
-import com.university.eventmanagement.repository.EventRepository;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
@@ -15,10 +16,15 @@ public class EventService {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
     public List<Event> getActiveEvents() {
         return eventRepository.findByStatusInOrderByEventDateAsc(
             List.of(Event.Status.UPCOMING, Event.Status.POSTPONED)
-        );
+        ).stream()
+         .filter(event -> !event.isCancelled())
+         .collect(Collectors.toList());
     }
 
     public List<Event> getPastEvents() {
@@ -36,6 +42,7 @@ public class EventService {
     public Event createEvent(Event event) {
         event.setBookedSeats(0);
         event.setStatus(Event.Status.UPCOMING);
+        event.setCancelled(false);
         return eventRepository.save(event);
     }
 
@@ -59,8 +66,19 @@ public class EventService {
         return eventRepository.save(existing);
     }
 
+    @Transactional
     public void deleteEvent(Long id) {
-        eventRepository.deleteById(id);
+        Event event = eventRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Event not found"));
+        event.setCancelled(true);
+        eventRepository.save(event);
+
+        bookingRepository.findByEvent(event).stream()
+            .filter(b -> b.getPaymentStatus() == Booking.PaymentStatus.PAID)
+            .forEach(b -> {
+                b.setRefundStatus(Booking.RefundStatus.IN_PROCESS);
+                bookingRepository.save(b);
+            });
     }
 
     public void markAsPast(Long id) {
@@ -74,6 +92,7 @@ public class EventService {
         Double avg = eventRepository.findAverageRatingByEventId(eventId);
         return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
     }
+
     public long getRatingCount(Long eventId) {
         return eventRepository.countRatingsByEventId(eventId);
     }

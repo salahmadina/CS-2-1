@@ -16,6 +16,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -41,11 +43,20 @@ public class AdminController {
             .filter(b -> b.getPaymentStatus() == Booking.PaymentStatus.PENDING)
             .count();
 
+        Map<Long, Double> averageRatingMap = new HashMap<>();
+        Map<Long, Long> ratingCountMap = new HashMap<>();
+        for (Event event : allEvents) {
+            averageRatingMap.put(event.getId(), eventService.getAverageRating(event.getId()));
+            ratingCountMap.put(event.getId(), eventService.getRatingCount(event.getId()));
+        }
+
         model.addAttribute("admin", admin);
         model.addAttribute("events", allEvents);
         model.addAttribute("totalEvents", allEvents.size());
         model.addAttribute("totalBookings", allBookings.size());
         model.addAttribute("pendingCount", pendingCount);
+        model.addAttribute("averageRatingMap", averageRatingMap);
+        model.addAttribute("ratingCountMap", ratingCountMap);
 
         return "admin/dashboard";
     }
@@ -56,8 +67,19 @@ public class AdminController {
         User admin = getLoggedInAdmin(session);
         if (admin == null) return "redirect:/login";
 
+        List<Event> events = eventService.getAllEvents();
+        Map<Long, Double> averageRatingMap = new HashMap<>();
+        Map<Long, Long> ratingCountMap = new HashMap<>();
+
+        for (Event event : events) {
+            averageRatingMap.put(event.getId(), eventService.getAverageRating(event.getId()));
+            ratingCountMap.put(event.getId(), eventService.getRatingCount(event.getId()));
+        }
+
         model.addAttribute("admin", admin);
-        model.addAttribute("events", eventService.getAllEvents());
+        model.addAttribute("events", events);
+        model.addAttribute("averageRatingMap", averageRatingMap);
+        model.addAttribute("ratingCountMap", ratingCountMap);
 
         return "admin/events";
     }
@@ -157,7 +179,7 @@ public class AdminController {
         if (admin == null) return "redirect:/login";
 
         eventService.deleteEvent(id);
-        redirectAttributes.addFlashAttribute("success", "Event deleted.");
+        redirectAttributes.addFlashAttribute("success", "Event cancelled. Existing bookings and payments were preserved.");
         return "redirect:/admin/events";
     }
 
@@ -200,6 +222,25 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", result);
         } else {
             redirectAttributes.addFlashAttribute("success", "Payment confirmed!");
+        }
+
+        return "redirect:/admin/bookings";
+    }
+
+    @PostMapping("/bookings/refund/{bookingId}")
+    public String confirmRefund(@PathVariable Long bookingId,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+
+        User admin = getLoggedInAdmin(session);
+        if (admin == null) return "redirect:/login";
+
+        String result = bookingService.confirmRefund(bookingId);
+
+        if (!result.equals("SUCCESS")) {
+            redirectAttributes.addFlashAttribute("error", result);
+        } else {
+            redirectAttributes.addFlashAttribute("success", "Refund confirmed for student.");
         }
 
         return "redirect:/admin/bookings";

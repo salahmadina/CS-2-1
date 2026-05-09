@@ -41,7 +41,9 @@
                         <td th:text="${stat.index + 1}"></td>
                         <td th:text="${booking.user.name}"></td>
                         <td th:text="${booking.user.collegeId}"></td>
-                        <td th:text="${booking.event.name}"></td>
+                        <td>
+                            <div th:text="${booking.event.name}"></div>
+                        </td>
                         <td th:text="${#temporals.format(booking.event.eventDate, 'dd MMM yyyy')}"></td>
                         <td>
                             <span th:if="${booking.event.free}">FREE</span>
@@ -52,18 +54,36 @@
                             <span th:switch="${booking.paymentStatus.name()}">
                                 <span th:case="'FREE'"    class="badge badge-success">FREE</span>
                                 <span th:case="'PENDING'" class="badge badge-warning">PENDING</span>
-                                <span th:case="'PAID'"    class="badge badge-paid">PAID ✓</span>
+                                <span th:case="'PAID'"    class="badge badge-paid">Paid &#x2705;</span>
                             </span>
                         </td>
                         <td th:text="${#temporals.format(booking.bookedAt, 'dd MMM yyyy')}"></td>
                         <td>
-                            <form th:if="${booking.paymentStatus.name() == 'PENDING'}"
+                            <!-- Normal: confirm payment for pending non-cancelled events -->
+                            <form th:if="${booking.paymentStatus.name() == 'PENDING' and !booking.event.cancelled}"
                                   th:action="@{/admin/bookings/confirm/{id}(id=${booking.id})}"
                                   method="post">
                                 <button type="submit" class="btn btn-sm btn-primary">Confirm Payment</button>
                             </form>
-                            <span th:unless="${booking.paymentStatus.name() == 'PENDING'}"
-                                  class="text-muted">—</span>
+                            <!-- Cancelled event with PAID booking awaiting refund confirmation -->
+                            <form th:if="${booking.event.cancelled
+                                          and booking.paymentStatus.name() == 'PAID'
+                                          and booking.refundStatus.name() != 'REFUNDED'}"
+                                  th:action="@{/admin/bookings/refund/{id}(id=${booking.id})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-sm btn-warning">Confirm Refund Sent</button>
+                            </form>
+                            <!-- Cancelled event refund already confirmed -->
+                            <span th:if="${booking.event.cancelled
+                                          and booking.paymentStatus.name() == 'PAID'
+                                          and booking.refundStatus.name() == 'REFUNDED'}"
+                                  class="badge badge-success">Refund Confirmed &#x2705;</span>
+                            <!-- Cancelled event, no payment was collected (FREE or PENDING) -->
+                            <span th:if="${booking.event.cancelled and booking.paymentStatus.name() != 'PAID'}"
+                                  class="text-muted">No payment collected</span>
+                            <!-- Normal non-cancelled, non-pending -->
+                            <span th:if="${!booking.event.cancelled and booking.paymentStatus.name() != 'PENDING'}"
+                                  class="text-muted">-</span>
                         </td>
                     </tr>
                 </tbody>
