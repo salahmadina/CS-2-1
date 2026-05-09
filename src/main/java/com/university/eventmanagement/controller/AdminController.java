@@ -1,24 +1,30 @@
 package com.university.eventmanagement.controller;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.university.eventmanagement.model.Booking;
 import com.university.eventmanagement.model.Event;
 import com.university.eventmanagement.model.User;
 import com.university.eventmanagement.service.BookingService;
 import com.university.eventmanagement.service.EventService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
@@ -170,8 +176,8 @@ public class AdminController {
         return "redirect:/admin/events";
     }
 
-    @PostMapping("/events/delete/{id}")
-    public String deleteEvent(@PathVariable Long id,
+    @PostMapping("/events/cancel/{id}")
+    public String cancelEvent(@PathVariable Long id,
                               HttpSession session,
                               RedirectAttributes redirectAttributes) {
 
