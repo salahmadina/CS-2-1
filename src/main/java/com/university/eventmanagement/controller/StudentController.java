@@ -23,7 +23,7 @@ import com.university.eventmanagement.service.RatingService;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/student") // acts like a waiter between the user and the service layer, it takes the request, calls the service, and returns a view (api)
+@RequestMapping("/student")
 public class StudentController {
 
     @Autowired
@@ -36,7 +36,7 @@ public class StudentController {
     @GetMapping("/dashboard") 
     public String dashboard(HttpSession session, Model model) {
 
-        User user = getLoggedInStudent(session); //session is memory
+        User user = getLoggedInStudent(session); 
         if (user == null) return "redirect:/login";
 
         List<Event> events = eventService.getActiveEvents();
@@ -67,7 +67,7 @@ public class StudentController {
         return "student/dashboard";
     }
 
-    @PostMapping("/book/{eventId}") 
+    @PostMapping("/book/{eventId}")   
     public String bookEvent(@PathVariable Long eventId,
                             HttpSession session,
                             RedirectAttributes redirectAttributes) {

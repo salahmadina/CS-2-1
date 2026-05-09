@@ -1,12 +1,13 @@
 package com.university.eventmanagement.service;
 
-import com.university.eventmanagement.model.Event;
-import com.university.eventmanagement.repository.EventRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.university.eventmanagement.model.Event;
+import com.university.eventmanagement.repository.EventRepository;
 
 @Service
 public class EventService {
@@ -72,5 +73,8 @@ public class EventService {
     public double getAverageRating(Long eventId) {
         Double avg = eventRepository.findAverageRatingByEventId(eventId);
         return avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0;
+    }
+    public long getRatingCount(Long eventId) {
+        return eventRepository.countRatingsByEventId(eventId);
     }
 }

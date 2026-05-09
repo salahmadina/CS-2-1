@@ -1,29 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8"/>
-        <title>My Bookings</title>
-        <link rel="stylesheet" th:href="@{/css/style.css}">
-    </head>
-    <body>
-        <div th:insert="fragments/navbar"::navbar></div>
-        <div class="page-container">
-            <div class="page-header">
-                <div>
-                    <h2>My Bookings</h2>
-                    <p>Your Registered Events and payment status</p>
-                </div>
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings - UniEvents</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:insert=fragments/navbar :: navbar></div>
+    <div class="page-container">
+        <div class="page-header">
             <div>
-                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${#lists.isEmpty(booking)}" class="empty-state">
-                    <p>You haven't booked any events yet</p>
-                    <a th:href="@{/student/dashboard}" class="btn btn-primary">Browse Events</a>
-                </div>
-                <div th:if="${!#lists.isEmpty(booking)}" class="table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                        <tr>
+                <h2>My Bookings</h2>
+                <p>Your registered events and payment status</p>
+            </div>
+        </div>
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${#lists.isEmpty(bookings)}" class="empty-state">
+            <p>You have not booked any events yet.</p>
+            <a th:href="@{/student/dashboard}" class="btn btn-primary">Browse Events</a>
+        </div>
+
+        <div class="table-wrapper" th:unless="${#lists.isEmpty(bookings)}">
+            <table class="data-table">
+                <thead>
+                    <tr>
                         <th>Event</th>
                         <th>Date</th>
                         <th>Price</th>
@@ -31,52 +32,66 @@
                         <th>Event Status</th>
                         <th>Booked On</th>
                         <th>Rating</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="booking : ${booking}">
-                                <td th:text="${booking.event.name}"></td>
-                                <td th:text="${#temporals.format(booking.event.date,'dd MMM YYYY')}"></td>
-                                <td>
-                                    <span th:if="${booking.event.free}">FREE</span>
-                                    <span th:if="${!booking.event.free}"
-                                    th:text="'$' + ${booking.event.price}"></span>
-                                </td>
-                                <td>
-                                    <span th:if="${booking.event.cancelled and booking.paymentStatus.name() == 'PAID' 
-                                    and booking.refundStatus.name() == 'IN_PROCESS'}"
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="booking : ${bookings}">
+                        <td th:text="${booking.event.name}"></td>
+                        <td th:text="${#temporals.format(booking.event.eventDate, 'dd MMM yyyy')}"></td>
+                        <td>
+                            <span th:if="${booking.event.free}">FREE</span>
+                            <span th:unless="${booking.event.free}"
+                                  th:text="'$' + ${booking.event.price}"></span>
+                        </td>
+                        <td>
+                            <span th:switch="${booking.paymentStatus.name()}">
+                                <span th:case="'FREE'"    class="badge badge-success">FREE</span>
+                                <span th:case="'PENDING'" class="badge badge-warning">PENDING</span>
+                                <span th:case="'PAID'"    class="badge badge-paid">Paid &#x2705;</span>
+                            </span>
+                        </td>
+                        <td>
+                            <!-- Cancelled + paid + refund in process -->
+                            <span th:if="${booking.event.cancelled
+                                          and booking.paymentStatus.name() == 'PAID'
+                                          and booking.refundStatus.name() == 'IN_PROCESS'}"
                                   class="status-cancelled">Event Cancelled &mdash; Refund in Process &#x23F3;</span>
-
-                                  <span th:if="${booking.event.cancelled and booking.paymentStatus.name()='PAID'
-                                                 and booking.refundStatus.name() == 'REFUNDED'}"
-                                            class="badge badge-success">Event Cancelled &mdash; Money Refunded &#x2705;</span>
-                                    <span th:if="${booking.paymentStatus.name() != 'PAID' and booking.event.cancelled}"
-                                    class="status-cancelled">Event Cancelled &#x274C;</span>
-                                    
-                            <span th:if="${!booking.event.cancelled}"
+                            <!-- Cancelled + paid + refund confirmed -->
+                            <span th:if="${booking.event.cancelled
+                                          and booking.paymentStatus.name() == 'PAID'
+                                          and booking.refundStatus.name() == 'REFUNDED'}"
+                                  class="badge badge-success">Event Cancelled &mdash; Money Refunded &#x2705;</span>
+                            <!-- Cancelled, no payment collected -->
+                            <span th:if="${booking.event.cancelled and booking.paymentStatus.name() != 'PAID'}"
+                                  class="status-cancelled">Event Cancelled &#x274C;</span>
+                            <!-- Not cancelled -->
+                            <span th:unless="${booking.event.cancelled}"
                                   th:text="${booking.event.status.name()}"></span>
-                                </td>
-                                <td th:text="${temporals.format(booking.bookedAt,'dd mm yyyy')}"></td>
-                                <td>
+                        </td>
+                        <td th:text="${#temporals.format(booking.bookedAt, 'dd MMM yyyy')}"></td>
+                        <td>
                             <span th:if="${ratedMap[booking.event.id]}"
                                   class="badge badge-rated">Rated</span>
+                            <!-- Rate button uses data attributes — no inline JS expression -->
                             <button th:if="${!ratedMap[booking.event.id] and canRateMap[booking.event.id]}"
                                     class="btn btn-sm btn-outline rate-btn"
                                     th:data-event-id="${booking.event.id}"
                                     th:data-event-name="${booking.event.name}">
                                 Rate
                             </button>
-                            <span th:switch="${true}">
-                                <span th:case="${booking.event.cancelled}" class="badge badge-grey">Unavailable</span>
-                                <span th:case="${canRateMap[booking.event.id]}"class="badge badge-green">Rate Now</span>
-                                <span th:case="${ratedMap[booking.event.id]}"class="badge badge-blue">Rated</span>
-                                <span th:case="*"class="badge badge-grey">Available after event</span>
-                            </span>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div id="ratingModal" class="modal" style="display:none;">
+                            <span th:if="${booking.event.cancelled}"
+                                  class="badge badge-grey">Unavailable</span>
+                            <span th:if="${!ratedMap[booking.event.id] and !canRateMap[booking.event.id] and !booking.event.cancelled}"
+                                  class="badge badge-grey">Available after event</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div id="ratingModal" class="modal" style="display:none;">
         <div class="modal-content">
             <h3>Rate: <span id="modalEventName"></span></h3>
             <form id="ratingForm" method="post">
@@ -101,6 +116,7 @@
             </form>
         </div>
     </div>
+
     <script>
         document.querySelectorAll('.rate-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
@@ -111,11 +127,12 @@
                 document.getElementById('ratingModal').style.display = 'flex';
             });
         });
+
         function closeModal() {
             document.getElementById('ratingModal').style.display = 'none';
         }
     </script>
-            </div>
-        </div>
-    </body>
+
+</body>
 </html>
+

@@ -16,7 +16,7 @@ import com.university.eventmanagement.repository.EventRepository;
 @Service 
 public class BookingService {
 
-    @Autowired
+    @Autowired 
     private BookingRepository bookingRepository;
 
     @Autowired
@@ -32,7 +32,7 @@ public class BookingService {
             return "You have already booked this event.";
         }
 
-        if (!event.hasAvaliableSeats()) {
+        if (!event.hasAvailableSeats()) {
             return "Sorry, this event is fully booked.";
         }
 
@@ -103,7 +103,7 @@ public class BookingService {
             return "Refund already confirmed.";
         }
 
-        booking.SetRefundStatus(Booking.RefundStatus.REFUNDED);
+        booking.setRefundStatus(Booking.RefundStatus.REFUNDED);
         bookingRepository.save(booking);
         return "SUCCESS";
     }

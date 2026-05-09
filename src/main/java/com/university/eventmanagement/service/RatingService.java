@@ -42,7 +42,7 @@ public class RatingService {
             return "You can rate this event only after it has been completed.";
         }
 
-        if (ratingRepository.existByUserAndEvent(user, event)) {
+        if (ratingRepository.existsByUserAndEvent(user, event)) {
             return "You have already rated this event.";
         }
 
@@ -54,7 +54,7 @@ public class RatingService {
         rating.setUser(user);
         rating.setEvent(event);
         rating.setStars(stars);
-        rating.SetComment(comment);
+        rating.setComment(comment);
 
         ratingRepository.save(rating);
         return "SUCCESS";
@@ -67,7 +67,7 @@ public class RatingService {
     }
 
     public boolean hasUserRatedEvent(User user, Event event) {
-        return ratingRepository.existByUserAndEvent(user, event);
+        return ratingRepository.existsByUserAndEvent(user, event);
     }
 
     public Optional<Rating> getUserRating(User user, Event event) {
@@ -75,7 +75,7 @@ public class RatingService {
     }
 
     public boolean hasUserRatedBooking(Booking booking) {
-        return ratingRepository.existByUserAndEvent(booking.getUser(), booking.getEvent());
+        return ratingRepository.existsByUserAndEvent(booking.getUser(), booking.getEvent());
     }
 
     public boolean canRateBooking(Booking booking) {
