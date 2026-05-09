@@ -16,7 +16,7 @@ import com.university.eventmanagement.repository.EventRepository;
 @Service 
 public class BookingService {
 
-    @Autowired //dependecny injection, it creates an instance of the repository and injects it here,so we can use it to interact with the database
+    @Autowired
     private BookingRepository bookingRepository;
 
     @Autowired

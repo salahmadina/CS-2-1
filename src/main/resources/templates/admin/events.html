@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Events - UniEvents</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <div class="page-container">
+        <div class="page-header">
+            <h2>Manage Events</h2>
+            <a th:href="@{/admin/events/new}" class="btn btn-primary">+ Add Event</a>
+        </div>
+
+        <div th:if="${error}"   class="alert alert-error"   th:text="${error}"></div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Location</th>
+                        <th>Price</th>
+                        <th>Seats</th>
+                        <th>Status</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="event : ${events}">
+                        <td th:text="${event.name}"></td>
+                        <td th:text="${#temporals.format(event.eventDate, 'dd MMM yyyy, HH:mm')}"></td>
+                        <td th:text="${event.location}"></td>
+                        <td>
+                            <span th:if="${event.free}">FREE</span>
+                            <span th:unless="${event.free}" th:text="'$' + ${event.price}"></span>
+                        </td>
+                        <td>
+                            <span th:if="${event.unlimited}">Unlimited</span>
+                            <span th:unless="${event.unlimited}"
+                                  th:text="${event.remainingSeats} + ' left'"></span>
+                        </td>
+                        <td>
+                            <span th:if="${event.cancelled}" class="badge badge-danger">CANCELLED</span>
+                            <span th:unless="${event.cancelled}" th:switch="${event.status.name()}">
+                                <span th:case="'UPCOMING'"  class="badge badge-success">UPCOMING</span>
+                                <span th:case="'POSTPONED'" class="badge badge-warning">POSTPONED</span>
+                                <span th:case="'PAST'"      class="badge badge-grey">PAST</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${ratingCountMap[event.id] > 0}"
+                                  th:text="${averageRatingMap[event.id]} + ' / 5 (' + ${ratingCountMap[event.id]} + ')'"></span>
+                            <span th:if="${ratingCountMap[event.id] == 0}">No ratings yet</span>
+                        </td>
+                        <td class="actions-cell">
+                            <a th:href="@{/admin/events/edit/{id}(id=${event.id})}"
+                               class="btn btn-sm btn-outline">Edit</a>
+
+                            <form th:action="@{/admin/events/past/{id}(id=${event.id})}"
+                                  method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-warning"
+                                        th:disabled="${event.status.name() == 'PAST'}">Past</button>
+                            </form>
+
+                            <form th:action="@{/admin/events/delete/{id}(id=${event.id})}"
+                                  method="post"
+                                  class="cancel-event-form"
+                                  style="display:inline;"
+                                  th:data-event-name="${event.name}">
+                                <button type="button"
+                                        class="btn btn-sm btn-danger open-cancel-modal"
+                                        th:data-event-name="${event.name}"
+                                        th:disabled="${event.cancelled}">Cancel</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="cancelEventModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>Cancel Event</h3>
+            <p class="modal-text">
+                Are you sure you want to cancel
+                <span id="cancelEventName" class="modal-highlight"></span>?
+            </p>
+            <p class="modal-note">Existing bookings and payments will stay visible for students.</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-danger" id="confirmCancelEvent">Yes, Cancel Event</button>
+                <button type="button" class="btn btn-outline" id="closeCancelEventModal">Keep Event</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var cancelEventModal = document.getElementById('cancelEventModal');
+        var cancelEventName = document.getElementById('cancelEventName');
+        var confirmCancelEventButton = document.getElementById('confirmCancelEvent');
+        var selectedCancelForm = null;
+
+        document.querySelectorAll('.open-cancel-modal').forEach(function(button) {
+            button.addEventListener('click', function() {
+                selectedCancelForm = this.closest('.cancel-event-form');
+                cancelEventName.textContent = this.getAttribute('data-event-name');
+                cancelEventModal.style.display = 'flex';
+            });
+        });
+
+        document.getElementById('closeCancelEventModal').addEventListener('click', function() {
+            closeCancelEventModal();
+        });
+
+        confirmCancelEventButton.addEventListener('click', function() {
+            if (selectedCancelForm) {
+                selectedCancelForm.submit();
+            }
+        });
+
+        function closeCancelEventModal() {
+            cancelEventModal.style.display = 'none';
+            selectedCancelForm = null;
+            cancelEventName.textContent = '';
+        }
+
+        cancelEventModal.addEventListener('click', function(event) {
+            if (event.target === cancelEventModal) {
+                closeCancelEventModal();
+            }
+        });
+    </script>
+
+</body>
+</html>
