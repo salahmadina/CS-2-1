@@ -1,4 +1,5 @@
 package com.university.eventmanagement.service;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +90,6 @@ public class RatingService {
         }
 
         return event.getStatus() == Event.Status.PAST
-            || event.getEventDate().isBefore(LocalDateTime.now());
+            || !event.getEventDate().isAfter(LocalDateTime.now());
     }
 }

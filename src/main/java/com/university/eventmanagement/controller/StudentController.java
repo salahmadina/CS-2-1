@@ -1,4 +1,5 @@
 package com.university.eventmanagement.controller;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,15 +29,17 @@ public class StudentController {
 
     @Autowired
     private EventService eventService;
+
     @Autowired
     private BookingService bookingService;
+
     @Autowired
     private RatingService ratingService;
 
-    @GetMapping("/dashboard") 
+    @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
 
-        User user = getLoggedInStudent(session); 
+        User user = getLoggedInStudent(session);
         if (user == null) return "redirect:/login";
 
         List<Event> events = eventService.getActiveEvents();
@@ -50,7 +53,7 @@ public class StudentController {
         for (Event event : events) {
             bookedMap.put(event.getId(), bookingService.hasUserBookedEvent(user, event));
             ratedMap.put(event.getId(),  ratingService.hasUserRatedEvent(user, event));
-            canRateMap.put(event.getId(), event.getEventDate().isBefore(java.time.LocalDateTime.now())
+            canRateMap.put(event.getId(), !event.getEventDate().isAfter(java.time.LocalDateTime.now())
                 || event.getStatus() == Event.Status.PAST);
             averageRatingMap.put(event.getId(), eventService.getAverageRating(event.getId()));
             ratingCountMap.put(event.getId(), eventService.getRatingCount(event.getId()));
@@ -64,10 +67,10 @@ public class StudentController {
         model.addAttribute("averageRatingMap", averageRatingMap);
         model.addAttribute("ratingCountMap", ratingCountMap);
 
-        return "student/dashboard";
+        return "student/dashboard"; 
     }
 
-    @PostMapping("/book/{eventId}")   
+    @PostMapping("/book/{eventId}")
     public String bookEvent(@PathVariable Long eventId,
                             HttpSession session,
                             RedirectAttributes redirectAttributes) {
@@ -82,6 +85,7 @@ public class StudentController {
         } else {
             redirectAttributes.addFlashAttribute("success", "Booked successfully");
         }
+
         return "redirect:/student/dashboard";
     }
 
@@ -110,7 +114,7 @@ public class StudentController {
         return "student/my-bookings";
     }
 
-    @PostMapping("/rate/{eventId}") 
+    @PostMapping("/rate/{eventId}")
     public String rateEvent(@PathVariable Long eventId,
                             @RequestParam int stars,
                             @RequestParam(required = false) String comment,
